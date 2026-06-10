@@ -61931,7 +61931,7 @@ toughness=1
 [card]
 name=Kathari Bomber
 abilities=flying
-auto=@combatdamaged(player) from(this):_GOBLINTOKEN_*2 && moveTo(ownergraveyard) all(this)
+auto=@combatdamaged(player) from(this):_GOBLINTOKEN_*2 && sacrifice all(this)
 autograveyard={3}{B}{R}:name(Unearth) moveto(mybattlefield) and!( transforms((,haste,newability[unearth],newability[exiledeath])) forever )! asSorcery
 text=Flying -- When Kathari Bomber deals combat damage to a player, put two 1/1 red Goblin creature tokens onto the battlefield and sacrifice Kathari Bomber. -- Unearth {3}{B}{R} ({3}{B}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)
 mana={1}{B}{R}
