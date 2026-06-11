@@ -127833,7 +127833,7 @@ toughness=2
 [/card]
 [card]
 name=Watchers of the Dead
-auto={E}:ability$!target(<upto:2>*|mygraveyard) (blink) && moveto(exile) all(*|mygraveyard)!$ opponent
+auto={E}:ability$!target(<upto:2>*|mygraveyard) becomes(kept) forever && moveto(exile) all(*[-kept]|mygraveyard)!$ opponent
 text=Exile Watchers of the Dead: Each opponent chooses two cards in their graveyard and exiles the rest.
 mana={2}
 type=Artifact Creature
