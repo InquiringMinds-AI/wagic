@@ -998,3 +998,4 @@ ai/proliferate_simple.txt
 ai/infect_self_target_i594.txt
 generic/probe_nv.txt
 generic/hollow_specter_i1085.txt
+generic/world_at_war_i1085.txt
