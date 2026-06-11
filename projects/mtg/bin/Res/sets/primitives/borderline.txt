@@ -77365,7 +77365,7 @@ toughness=3
 [card]
 name=Nightveil Specter
 abilities=flying
-auto=@combatdamaged(player) from(this):moveto(exile) and!( transforms((,canplayfromexile)))! all(*[zpos=1]|mylibrary)
+auto=@combatdamaged(player) from(this):moveto(exile) and!( transforms((,canplayfromexile)))! all(*[zpos=1]|opponentlibrary)
 text=Whenever Nightveil Specter deals combat damage to a player, that player exiles the top card of their library. -- You may play cards exiled with Nightveil Specter.
 mana={UB}{UB}{UB}
 type=Creature
