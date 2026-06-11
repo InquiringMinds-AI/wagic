@@ -107985,7 +107985,7 @@ toughness=2
 [/card]
 [card]
 name=Spiteful Sliver
-auto=lord(sliver|mybattlefield) transforms((,newability[@damaged(sliver):damage:1 target(player^planeswalker)]))
+auto=lord(sliver|mybattlefield) transforms((,newability[@damaged(this):damage:thatmuch target(player^planeswalker)]))
 text=Sliver creatures you control have "Whenever this creature is dealt damage, it deals that much damage to target player or planeswalker."
 mana={2}{R}
 type=Creature
