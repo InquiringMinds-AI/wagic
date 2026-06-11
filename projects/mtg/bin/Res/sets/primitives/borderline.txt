@@ -124524,7 +124524,7 @@ toughness=3
 [/card]
 [card]
 name=Vengeful Rebirth
-auto=moveto(myexile) all(this)
+auto=@movedto(this|mygraveyard) from(mystack):all(trigger[to]) moveto(myexile)
 auto=if type(land|mygraveyard)~morethan~0 then choice name(Return land card) target(land|mygraveyard) moveto(hand)
 auto=if type(*[manacost=0]|mygraveyard)~morethan~0 then choice name(Return non land card with manacost 0) target(*[manacost=0]|mygraveyard) moveto(hand)
 auto=if type(*[manacost=1]|mygraveyard)~morethan~0 then choice name(Return non land card with manacost 1) target(*[manacost=1]|mygraveyard) moveto(hand) && ability$!name(Damage target creature or player) target(anytarget) damage:1!$ controller
