@@ -79038,8 +79038,8 @@ subtype=Saga
 [/card]
 [card]
 name=Of One Mind
-anyzone=if type(human|myBattlefield)~morethan~0 then changecost(colorless:-1) forcedalive
-anyzone=if type(creature[-human]|myBattlefield)~morethan~0 then changecost(colorless:-1) forcedalive
+anyzone=while(restriction{type:human:mybattlefield}>0) changecost(colorless:-1) forcedalive
+anyzone=while(restriction{type:creature[-human]:mybattlefield}>0) changecost(colorless:-1) forcedalive
 auto=draw:2 controller
 text=This spell costs {2} less to cast if you control a Human creature and a non-Human creature. -- Draw two cards.
 mana={2}{U}
