@@ -118564,8 +118564,8 @@ type=Sorcery
 [/card]
 [card]
 name=Titania's Song
-auto=lord(artifact[-creature]) transforms((creature,noactivatedability,newability[manacost/manacost]))
-autograveyard=_DIES_all(artifact[-creature]|myBattlefield) transforms((creature,noactivatedability,newability[manacost/manacost])) ueot
+auto=lord(artifact[-creature]) transforms((creature,noactivatedability,newability[srcmanacost/srcmanacost]))
+autograveyard=_DIES_all(artifact[-creature]|myBattlefield) transforms((creature,noactivatedability,newability[srcmanacost/srcmanacost])) ueot
 text=Each noncreature artifact loses all abilities and becomes an artifact creature with power and toughness each equal to its mana value. If Titania's Song leaves the battlefield, this effect continues until end of turn.
 mana={3}{G}
 type=Enchantment
@@ -130744,7 +130744,7 @@ toughness=3
 [/card]
 [card]
 name=Xenic Poltergeist
-auto={T}:target(artifact[-creature]) transforms((creature,newability[manacost/manacost])) uynt
+auto={T}:target(artifact[-creature]) transforms((creature,newability[srcmanacost/srcmanacost])) uynt
 text={T}: Until your next upkeep, target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value.
 mana={1}{B}{B}
 type=Creature
@@ -132005,7 +132005,7 @@ abilities=flying
 auto=lord(creature[Enchantment]|myBattlefield) deathtouch
 auto=lord(creature[Enchantment]|myBattlefield) lifelink
 auto=lord(creature[Enchantment]|myBattlefield) hexproof
-auto={1}{W}:target(enchantment[-aura]|myBattlefield) transforms((creature,setpower=0,settoughness=0,newability[manacost/manacost]))
+auto={1}{W}:target(enchantment[-aura]|myBattlefield) transforms((creature,setpower=0,settoughness=0,newability[srcmanacost/srcmanacost]))
 text=Flying -- Enchantment creatures you control have deathtouch, lifelink, and hexproof. -- {1}{W}: Target non-Aura enchantment you control becomes a creature in addition to its other types and has base power and base toughness each equal to its mana value.
 mana={W}{U}{B}
 type=Legendary Creature

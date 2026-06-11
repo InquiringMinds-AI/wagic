@@ -4157,7 +4157,7 @@ toughness=1
 [card]
 name=Animate Artifact
 target=artifact
-auto=teach(artifact[-creature]) becomes(Artifact Creature,manacost/manacost)
+auto=teach(artifact[-creature]) becomes(Artifact Creature,srcmanacost/srcmanacost)
 text=Enchant artifact -- As long as enchanted artifact isn't a creature, it's an artifact creature with power and toughness each equal to its mana value.
 mana={3}{U}
 type=Enchantment
@@ -53548,7 +53548,7 @@ toughness=1
 [/card]
 [card]
 name=Hedron Matrix
-auto=teach(creature) transforms((,newability[manacost/manacost]))
+auto=teach(creature) transforms((,newability[srcmanacost/srcmanacost]))
 auto={4}:equip
 text=Equipped creature gets +X/+X, where X is its mana value. -- Equip {4}
 mana={4}
@@ -70967,7 +70967,7 @@ type=Sorcery
 [/card]
 [card]
 name=March of the Machines
-auto=lord(artifact[-creature]) transforms((creature,newability[manacost/manacost]))
+auto=lord(artifact[-creature]) transforms((creature,newability[srcmanacost/srcmanacost]))
 mana={3}{U}
 type=Enchantment
 text=Each noncreature artifact is an artifact creature with power and toughness each equal to its mana value. (Equipment that's a creature can't equip a creature.)
@@ -82541,7 +82541,7 @@ toughness=4
 [/card]
 [card]
 name=Opalescence
-auto=lord(other enchantment[-aura]) transforms((creature,newability[manacost/manacost]))
+auto=lord(other enchantment[-aura]) transforms((creature,newability[srcmanacost/srcmanacost]))
 mana={2}{W}{W}
 type=Enchantment
 text=Each other non-Aura enchantment is a creature with power and toughness each equal to its mana value. It's still an enchantment.
