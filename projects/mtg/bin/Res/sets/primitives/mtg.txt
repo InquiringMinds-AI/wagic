@@ -74088,7 +74088,7 @@ type=Sorcery
 [/card]
 [card]
 name=Mind's Dilation
-auto=@movedto(*|opponentstack) restriction{thisturn(*|opponentstack)~equalto~1}:transforms((,newability[@movedto(*[-land]|opponentgraveyard) restriction{thisturn(*|opponentstack)~equalto~1}:all(trigger[to]) may castcard(normal)])) ueot && ingest:1 opponent
+auto=@movedto(*|opponentstack) restriction{thisturn(*|opponentstack)~equalto~1}:transforms((,newability[@movedto(*[-land]|opponentexile) restriction{thisturn(*|opponentstack)~equalto~1}:all(trigger[to]) may castcard(normal)])) ueot && ingest:1 opponent
 text=Whenever an opponent casts their first spell each turn, that player exiles the top card of their library. If it's a nonland card, you may cast it without paying its mana cost.
 mana={5}{U}{U}
 type=Enchantment
