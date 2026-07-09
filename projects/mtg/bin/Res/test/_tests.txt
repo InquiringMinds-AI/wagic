@@ -1086,7 +1086,6 @@ momir/overcost.txt
 ########################
 ai/proliferate_simple.txt
 ai/infect_self_target_i594.txt
-generic/probe_nv.txt
 generic/trigger_combatdamaged_1.txt
 generic/trigger_combatdamaged_2.txt
 generic/trigger_drawn.txt
