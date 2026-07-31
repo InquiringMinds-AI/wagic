@@ -108,7 +108,7 @@ class SdlApp
 public: /* For easy interfacing with JGE static functions */
     bool            Running;
     SDL_Window*     window;
-    SDL_Surface*    Surf_Display;
+    SDL_GLContext   glContext;
     SDL_Rect        viewPort;
     Uint32          lastMouseUpTime;
     Uint32          lastFingerDownTime;
@@ -121,7 +121,7 @@ public: /* For easy interfacing with JGE static functions */
     int mMouseDownY;
 
 public:
-    SdlApp() : Surf_Display(NULL), window(NULL), lastMouseUpTime(0), lastFingerDownTime(0), Running(true), mMouseDownX(0), mMouseDownY(0)
+    SdlApp() : glContext(NULL), window(NULL), lastMouseUpTime(0), lastFingerDownTime(0), Running(true), mMouseDownX(0), mMouseDownY(0)
     {
     }
 
@@ -291,7 +291,10 @@ public:
 
     void OnCleanup()
     {
-        SDL_FreeSurface(Surf_Display);
+        if (glContext)
+            SDL_GL_DeleteContext(glContext);
+        if (window)
+            SDL_DestroyWindow(window);
         SDL_Quit();
     }
 };
@@ -459,7 +462,7 @@ void SdlApp::OnUpdate()
 	if(g_engine)
 		g_engine->Render();
 
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(window);
 }
 
 void SdlApp::OnKeyPressed(const SDL_KeyboardEvent& event)
@@ -648,19 +651,18 @@ bool SdlApp::OnInit()
 {
 	int window_w, window_h;
 
-	if(SDL_Init(SDL_INIT_EVERYTHING & ~SDL_INIT_HAPTIC) < 0)
+	if(SDL_Init(SDL_INIT_EVERYTHING) < 0) 
 	{
 		return false;
 	}
 
-	SDL_putenv("SDL_VIDEO_CENTERED=1");
-
-	const SDL_VideoInfo *pVideoInfo = SDL_GetVideoInfo();
-	DebugTrace("Video Display : h " << pVideoInfo->current_h << ", w " << pVideoInfo->current_w);
+	SDL_DisplayMode displayMode;
+	SDL_GetCurrentDisplayMode(0, &displayMode);
+	DebugTrace("Video Display : h " << displayMode.h << ", w " << displayMode.w);
 
 #if (defined ANDROID) || (defined IOS)
-	window_w = pVideoInfo->current_w;
-	window_h = pVideoInfo->current_h;
+	window_w = displayMode.w;
+	window_h = displayMode.h;
 #else
 	window_w = ACTUAL_SCREEN_WIDTH;
 	window_h = ACTUAL_SCREEN_HEIGHT;
@@ -685,39 +687,25 @@ bool SdlApp::OnInit()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
+	window = SDL_CreateWindow(g_launcher->GetName(),
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		window_w, window_h,
 #ifdef ANDROID
-	Surf_Display = SDL_SetVideoMode(window_w, window_h, 32, SDL_OPENGL | SDL_FULLSCREEN | SDL_WINDOW_BORDERLESS);
+		SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
 #else
-	Surf_Display = SDL_SetVideoMode(window_w, window_h, 32, SDL_OPENGL | SDL_RESIZABLE);
-	if (!Surf_Display)
-	{
-		// Retry without MSAA — many modern GL drivers reject the multisample request
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-		Surf_Display = SDL_SetVideoMode(window_w, window_h, 32, SDL_OPENGL | SDL_RESIZABLE);
-	}
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 #endif
-	if (!Surf_Display)
+	if (!window)
 	{
-		MessageBoxA(NULL, SDL_GetError(), "SDL_SetVideoMode failed", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	SDL_WM_SetCaption(g_launcher->GetName(), "");
 
-#ifdef WIN32
+	glContext = SDL_GL_CreateContext(window);
+	if (!glContext)
 	{
-		// Center on primary monitor — SDL 1.2 may place the window off-screen
-		HWND hwnd = FindWindowA(NULL, g_launcher->GetName());
-		if (hwnd)
-		{
-			int sw = GetSystemMetrics(SM_CXSCREEN);
-			int sh = GetSystemMetrics(SM_CYSCREEN);
-			RECT wr; GetWindowRect(hwnd, &wr);
-			int ww = wr.right - wr.left, wh = wr.bottom - wr.top;
-			SetWindowPos(hwnd, HWND_TOP, (sw - ww) / 2, (sh - wh) / 2, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		}
+		return false;
 	}
-#endif
+	SDL_GL_SetSwapInterval(1);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);		// Black Background (yes that's the way fuckers)
 #if (defined GL_ES_VERSION_2_0) || (defined GL_VERSION_2_0)
