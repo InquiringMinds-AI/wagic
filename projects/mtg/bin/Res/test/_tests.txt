@@ -90,6 +90,8 @@ generic/defense_of_heart_double_i1128.txt
 generic/populate_zektar_i1145.txt
 generic/proliferate_shroud_i1130.txt
 death_grasp.txt
+generic/serum_powder_leyline_i979.txt
+generic/serum_powder_window_i979.txt
 generic/devotion.txt
 generic/doesnotuntap.txt
 generic/doesnotuntap2.txt
