@@ -613,8 +613,8 @@ toughness=2
 [/card]
 [card]
 name=Adarkar Unicorn
-auto={T}:Add{U}
-auto={T}:Add{1}{U}
+auto={T}:Add{U} restriction{myupkeeponly}
+auto={T}:Add{1}{U} restriction{myupkeeponly}
 text={T}: Add {U} or {1}{U}. Spend this mana only to pay cumulative upkeep costs.
 mana={1}{W}{W}
 type=Creature
