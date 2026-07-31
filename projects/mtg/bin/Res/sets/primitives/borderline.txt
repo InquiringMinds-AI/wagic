@@ -46809,7 +46809,7 @@ type=Sorcery
 [/card]
 [card]
 name=Goblin Anarchomancer
-auto=lord(*[red;green]|nonbattlezone) altercost(colorless,-1)
+auto=lord(*[red;green]|mycastingzone) altercost(colorless,-1)
 text=Each spell you cast that's red or green costs 1 less to cast.
 mana={R}{G}
 type=Creature
