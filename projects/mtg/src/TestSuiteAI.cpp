@@ -70,8 +70,10 @@ MTGCardInstance * TestSuiteAI::getCard(string action)
     for (int i = 0; i < 2; i++)
     {
         Player * p = observer->players[i];
-        MTGGameZone * zones[] = { p->game->library, p->game->hand, p->game->inPlay, p->game->graveyard, p->game->commandzone, p->game->sideboard, p->game->removedFromGame };
-        for (int j = 0; j < 7; j++)
+        //reveal included so tests can click cards revealed by effects like
+        //Alrund's end-step type choice
+        MTGGameZone * zones[] = { p->game->library, p->game->hand, p->game->inPlay, p->game->graveyard, p->game->commandzone, p->game->sideboard, p->game->removedFromGame, p->game->reveal };
+        for (int j = 0; j < 8; j++)
         {
             MTGGameZone * zone = zones[j];
             for (int k = 0; k < zone->nb_cards; k++)
@@ -84,6 +86,19 @@ MTGCardInstance * TestSuiteAI::getCard(string action)
         }
     }
     DebugTrace("TESTUISTEAI: Can't find card:" << action.c_str());
+    //Dump what IS there: a failed lookup is usually a typo'd name or a
+    //zone that never got populated, and seeing the actual board answers
+    //both in one read.
+    for (int i = 0; i < 2; i++)
+    {
+        Player * p = observer->players[i];
+        MTGGameZone * zones[] = { p->game->library, p->game->hand, p->game->inPlay, p->game->graveyard, p->game->commandzone, p->game->sideboard, p->game->removedFromGame, p->game->reveal };
+        const char * zoneNames[] = { "library", "hand", "inPlay", "graveyard", "command", "sideboard", "exile", "reveal" };
+        for (int j = 0; j < 8; j++)
+            for (int k = 0; k < zones[j]->nb_cards; k++)
+                if (zones[j]->cards[k])
+                    DebugTrace("TESTUISTEAI: p" << i << " " << zoneNames[j] << "[" << k << "] '" << zones[j]->cards[k]->getLCName() << "' mtgid=" << zones[j]->cards[k]->getMTGId());
+    }
     return NULL;
 }
 
@@ -307,7 +322,14 @@ TestSuiteState::~TestSuiteState()
 
 void TestSuiteState::parsePlayerState(int playerId, string s)
 {
-    players[playerId]->parseLine(s);
+    if (!players[playerId]->parseLine(s))
+    {
+        //A typo'd key (e.g. "inhand:" for "hand:") used to vanish without a
+        //trace, leaving the expected state silently empty and the test
+        //vacuously green. Surface it in the results instead.
+        std::cerr << "TESTSUITE: unparsed player-state line (typo'd key?): " << s << std::endl;
+        DebugTrace("TESTSUITE: unparsed player-state line: " << s);
+    }
 }
 
 
@@ -610,13 +632,8 @@ int TestSuite::loadNext()
 
     if(!mProcessing)
     {   // "I don't like to wait" mode
+        joinWorkers();
         mProcessing = true;
-        while(mWorkerThread.size())
-        {
-          mWorkerThread.back()->join();
-          SAFE_DELETE(mWorkerThread.back());
-          mWorkerThread.pop_back();
-        }
 
         size_t thread_count = 1;
 #ifdef QT_CONFIG
@@ -631,11 +648,37 @@ int TestSuite::loadNext()
     }
 
     cleanup();
-    if (!load())
+    bool loaded;
+    {
+        //Serialized with the worker threads' loads (see ThreadProc)
+        boost::mutex::scoped_lock lock(mMutex);
+        loaded = load();
+    }
+    if (!loaded)
+    {
+        //A registered test file that cannot be loaded used to be skipped
+        //silently, understating the test count and hiding dead entries.
+        char buf[4096];
+        sprintf(buf, "<h3>%s</h3>", filename.c_str());
+        Log(buf);
+        Log("<span class=\"error\">==Could not load test file==</span><br />");
+        handleResults(false, 1);
         return loadNext();
+    }
     else
         cout << "Starting test : " << files[currentfile - 1] << endl;
     return currentfile;
+}
+
+void TestSuite::joinWorkers()
+{
+    mProcessing = false;
+    while(mWorkerThread.size())
+    {
+        mWorkerThread.back()->join();
+        SAFE_DELETE(mWorkerThread.back());
+        mWorkerThread.pop_back();
+    }
 }
 
 void TestSuite::ThreadProc(void* inParam)
@@ -651,18 +694,44 @@ void TestSuite::ThreadProc(void* inParam)
         float counter = 1.0f;
         while(instance->mProcessing && (filename = instance->getNextFile()) != "")
         {
-            TestSuiteGame theGame(instance, filename);
-            if(theGame.isOK)
+            TestSuiteGame * theGame = NULL;
             {
-                theGame.observer->loadTestSuitePlayer(0, &theGame);
-                theGame.observer->loadTestSuitePlayer(1, &theGame);
-
-                theGame.observer->startGame(theGame.gameType, /*instance->mRules*/Rules::getRulesByFilename("testsuite.txt"));
-                theGame.initGame();
-
-                while(!theGame.observer->didWin())
-                    theGame.observer->Update(counter++);
+                //File reads and the lazily-populated card collection are not
+                //thread-safe: unserialized concurrent loads spuriously failed,
+                //making tests randomly report "Could not load test file" (or,
+                //before that was reported at all, silently vanish from the
+                //results). Serialize the load; the game itself runs unlocked.
+                boost::mutex::scoped_lock lock(mMutex);
+                theGame = NEW TestSuiteGame(instance, filename);
             }
+            if(theGame->isOK)
+            {
+                theGame->observer->loadTestSuitePlayer(0, theGame);
+                theGame->observer->loadTestSuitePlayer(1, theGame);
+
+                theGame->observer->startGame(theGame->gameType, /*instance->mRules*/Rules::getRulesByFilename("testsuite.txt"));
+                //Mirror the GameStateDuel path: without this, a test's "seed"
+                //directive only took effect when the MAIN thread ran it -
+                //worker-run games kept the ctor's time(0) seed and seeded
+                //tests (die rolls, coin flips) failed randomly in the suite
+                //while passing solo.
+                if (theGame->seed)
+                    theGame->observer->resetSeed(theGame->seed);
+                theGame->initGame();
+
+                while(!theGame->observer->didWin())
+                    theGame->observer->Update(counter++);
+            }
+            else
+            {
+                //Report unloadable tests instead of skipping them silently
+                char buf[4096];
+                sprintf(buf, "<h3>%s</h3>", filename.c_str());
+                theGame->Log(buf);
+                theGame->Log("<span class=\"error\">==Could not load test file==</span><br />");
+                theGame->handleResults(false, 1);
+            }
+            SAFE_DELETE(theGame);
         }
     }
     LOG("Leaving TestSuite::ThreadProc");
