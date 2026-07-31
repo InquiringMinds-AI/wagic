@@ -81,6 +81,8 @@ generic/carom_i1085.txt
 generic/agony_warp_i1085.txt
 generic/dread_return_countered_i1085.txt
 generic/deathtouch_taught_i1142.txt
+generic/arcane_denial_i1126.txt
+generic/kraul_whipcracker_i1136.txt
 generic/devotion.txt
 generic/doesnotuntap.txt
 generic/doesnotuntap2.txt
