@@ -51466,8 +51466,8 @@ subtype=Aura
 [/card]
 [card]
 name=Gulf Squid
-auto=choice name(tap all lands opponent controls) tap all(land|opponentbattlefield)
-auto=choice name(tap all lands you control) tap all(land|mybattlefield)
+target=player
+auto=tap all(land|targetedpersonsbattlefield)
 text=When Gulf Squid enters, tap all lands target player controls.
 mana={3}{U}
 type=Creature

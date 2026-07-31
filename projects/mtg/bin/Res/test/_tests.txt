@@ -84,6 +84,7 @@ generic/deathtouch_taught_i1142.txt
 generic/arcane_denial_i1126.txt
 generic/kraul_whipcracker_i1136.txt
 generic/dreadhorde_arcanist_i1125.txt
+generic/gulf_squid_i1131.txt
 generic/devotion.txt
 generic/doesnotuntap.txt
 generic/doesnotuntap2.txt
