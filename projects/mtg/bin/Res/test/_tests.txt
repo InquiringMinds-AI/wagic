@@ -1040,6 +1040,9 @@ attacker_mana_tap_partial_wave21.txt
 fetchland_crack_after_landdrop_wave22.txt
 legions_end_phantom_chooser_wave28.txt
 ai/convoke_altcost_wave28.txt
+ai/vanishing_verse_artifact_target_n146j.txt
+ai/vanishing_verse_colored_land_target_n146j.txt
+ai/vanishing_verse_multicolor_negative_n146j.txt
 lexicon/cost_ninjutsu_return_attacker.txt
 lexicon/mana_dynamic_value_graveyard.txt
 lexicon/mana_dynamic_value_graveyard_empty.txt
