@@ -184,6 +184,73 @@ int TestSuiteAI::Act(float)
     //braided multi-worker suite log (grep "\[<testfile>\]").
     DebugTrace("TESTSUITE command: " << action << " [" << suite->filename << "]");
 
+    //A pending decision menu whose answer the script does not provide, while
+    //the script tries to CLICK A CARD: the open menu swallows the click and a
+    //targeted ETB one-shot never arms its chooser (it silently evaporates -
+    //Flametongue Kavu class). Apply the suite default - decline when the menu
+    //is cancelable (Cancel is the last item), take the first option when the
+    //choice is mandatory - and re-queue the click. Keyword/phase commands
+    //(goto/next/eot/yes/no/choice/...) deliberately do NOT trigger this:
+    //legacy fixtures step phases while menus dangle, and "choice N" is the
+    //menu's real answer. Mana producers pierce open menus in the engine
+    //(X-payments float mana while the menu waits) - mirror that too.
+    {
+        ActionLayer * al = observer->mLayers->actionLayer();
+        if (al->menuObject && al->abilitiesMenu && al->abilitiesMenu->mObjects.size())
+        {
+            bool keyword = action == "" || action == "next" || action == "eot" || action == "yes"
+                || action == "no" || action == "human" || action == "ai" || action == "endinterruption"
+                || action.find("choice ") != string::npos || action.find("goto") != string::npos
+                || action.find("reveal") != string::npos
+                || action.find("p1") != string::npos || action.find("p2") != string::npos;
+            //Menus are modal PER PLAYER: the click is only swallowed when the
+            //open menu belongs to the clicking player. A menu another player
+            //owns must not trigger the default (basic_skulk: the defender's
+            //blocker click landed fine under a dangling attacker-side menu).
+            MTGCardInstance * menuCard = dynamic_cast<MTGCardInstance*>(al->menuObject);
+            Player * menuOwner = menuCard ? menuCard->controller() : dynamic_cast<Player*>(al->menuObject);
+            //And the click must be one that is MEANINGLESS while the menu
+            //waits: a click on an OPPONENT's card with no target chooser
+            //armed (an own-card click declares blockers / activates
+            //abilities regardless of a dangling menu - basic_skulk,
+            //proliferate_shroud - and a click with a chooser armed IS the
+            //answer to it).
+            MTGCardInstance * clickCard = (keyword || menuOwner != this
+                || observer->getCurrentTargetChooser()) ? NULL : getCard(action);
+            MTGGameZone * clickZone = clickCard ? clickCard->getCurrentZone() : NULL;
+            bool inReveal = clickCard && clickZone && clickZone == clickCard->controller()->game->reveal;
+            if (clickCard && (clickCard->controller() != this || inReveal))
+            {
+                bool pierce = false;
+                if (clickCard->controller()
+                    && clickCard->controller()->game->inPlay->hasCard(clickCard) && !clickCard->isTapped())
+                {
+                    for (size_t mi = 0; mi < al->manaObjects.size(); mi++)
+                    {
+                        AManaProducer * amp = dynamic_cast<AManaProducer*>((MTGAbility *)al->manaObjects[mi]);
+                        if (amp && amp->source == clickCard)
+                        {
+                            DebugTrace("TESTSUITE menu pierce: mana producer '" << action
+                                       << "' [" << suite->filename << "]");
+                            pierce = true;
+                            break;
+                        }
+                    }
+                }
+                if (!pierce)
+                {
+                    int last = (int)al->abilitiesMenu->mObjects.size() - 1;
+                    bool cancelable = al->abilitiesMenu->mObjects[last]->GetId() == kCancelMenuID;
+                    DebugTrace("TESTSUITE menu default: " << (cancelable ? "cancel" : "first option")
+                               << " pending='" << action << "' [" << suite->filename << "]");
+                    al->doReactTo(cancelable ? last : 0);
+                    suite->currentAction--;
+                    return 1;
+                }
+            }
+        }
+    }
+
     if (observer->mLayers->stackLayer()->askIfWishesToInterrupt == this)
     {
         DebugTrace("TESTSUITE interrupt-ask for player " << ((this == observer->players[0]) ? 0 : 1) << " pending='" << action << "' latest=" << observer->mLayers->stackLayer()->getLatest(NOT_RESOLVED) << " [" << suite->filename << "]");
