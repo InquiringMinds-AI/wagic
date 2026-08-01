@@ -27,6 +27,7 @@ manapool:{R}
 [DO]
 Var Phantom Grip
 Grizzly Bears
+no
 yes
 Shock
 Grizzly Bears

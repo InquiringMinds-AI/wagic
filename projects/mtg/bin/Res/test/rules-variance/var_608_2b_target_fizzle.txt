@@ -21,6 +21,7 @@ manapool:{R}
 [DO]
 Var Surge Blessing
 Grizzly Bears
+no
 yes
 Shock
 Grizzly Bears
