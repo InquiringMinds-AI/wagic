@@ -1038,6 +1038,8 @@ march_convoke_x.txt
 attacker_mana_tap_wave20.txt
 attacker_mana_tap_partial_wave21.txt
 fetchland_crack_after_landdrop_wave22.txt
+legions_end_phantom_chooser_wave28.txt
+ai/convoke_altcost_wave28.txt
 lexicon/cost_ninjutsu_return_attacker.txt
 lexicon/mana_dynamic_value_graveyard.txt
 lexicon/mana_dynamic_value_graveyard_empty.txt

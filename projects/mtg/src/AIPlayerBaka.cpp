@@ -634,11 +634,23 @@ int OrderedAIAction::getEfficiency()
             efficiency = 90;
         }
     }
-    else if (AATurnSide * ats = dynamic_cast<AATurnSide *>(a))
+    else if (dynamic_cast<AATurnSide *>(a))
     {
-        efficiency = 0; // AI does not have to use the doubleside ability to avoid loops but it can randomly choose to flip card and cast its back side.
-        if(std::rand() % 2)
-            ats->source->isFlipped = (ats->source->isFlipped > 0)?0:1;
+        // Doubleside (modal-DFC "Flip Side" in hand) is scored 0: the AI does
+        // not proactively toggle which face a hand card DISPLAYS. The old code
+        // here toggled ats->source->isFlipped via std::rand() as a "randomly
+        // consider the other face" heuristic - but SCORING must never mutate
+        // game state (getEfficiency runs every ranking pass, on both the Baka
+        // and the GPT seat), and this toggle desynced the isFlipped FLAG from
+        // the displayed face: paired with AATurnSide::resolve's AI flag-reset
+        // it let the flag oscillate forever without ever flipping the display
+        // or casting (the flip-thrash livelock, wave-27). It also never
+        // produced a correct back-face cast - a flag-only flip does not swap
+        // the card's name/cost, so nothing downstream actually cast the back.
+        // The back face is cast directly via its alternative-cost option in the
+        // cast menu (the modal-DFC alt-cost path), so the display toggle is not
+        // needed to reach it. No mutation, no rand: efficiency stays 0.
+        efficiency = 0;
     }
     else if (ATokenCreator * atc = dynamic_cast<ATokenCreator *>(a))
     {
@@ -1411,7 +1423,54 @@ bool AIPlayerBaka::payTheManaCost(ManaCost * cost, int anytypeofmana, MTGCardIns
                     checkTarget++;
                 }
                 if(!ec->costs[i]->isPaymentSet())
+                {
+                    //CONVOKE is a REDUCTION, not a stand-alone cost: the tapped
+                    //creatures cover part of the printed cost and the REMAINDER
+                    //is paid from mana. Convoke::isPaymentSet checks whether the
+                    //LIVE pool affords that reduced remainder, but the AI pays
+                    //synchronously here with an EMPTY pool (its mana taps are
+                    //queued clicks that fire on later ticks), so any convoke cast
+                    //not fully covered by creatures failed this gate and aborted -
+                    //the card reverted to hand and was re-picked for turns
+                    //(Venerated Loxodon 2/23, March of the Multitudes 0/17,
+                    //corpus 20260725). Float the reduced remainder from lands NOW:
+                    //queue the producer clicks BEFORE the caller queues the card
+                    //click, so by the time MTGAlternativeCostRule::reactToClick
+                    //re-checks isExtraPaymentSet the pool holds the reduced mana
+                    //and the cast completes (creatures tap via Convoke::doPay).
+                    Convoke * conv = dynamic_cast<Convoke*>(ec->costs[i]);
+                    if (conv && ec->costs[i]->tc && ec->costs[i]->tc->getNbTargets() > 0)
+                    {
+                        ManaCost * reduced = conv->getReduction();
+                        bool floated = false;
+                        if (reduced)
+                        {
+                            int anyt = target->has(Constants::ANYTYPEOFMANAABILITY);
+                            if (target->controller()->getManaPool()->canAfford(reduced, anyt))
+                                floated = true; //creatures + existing pool already cover it
+                            else
+                            {
+                                vector<MTGAbility*> landPlan = canPayMana(target, reduced, anyt);
+                                if (landPlan.size())
+                                {
+                                    for (size_t lp = 0; lp < landPlan.size(); ++lp)
+                                    {
+                                        if (AManaProducer * amp = dynamic_cast<AManaProducer*>(landPlan[lp]))
+                                            clickstream.push(NEW AIAction(this, amp, amp->source));
+                                        else if (GenericActivatedAbility * gmp = dynamic_cast<GenericActivatedAbility*>(landPlan[lp]))
+                                            clickstream.push(NEW AIAction(this, gmp, gmp->source));
+                                    }
+                                    floated = true;
+                                }
+                            }
+                            SAFE_DELETE(reduced);
+                        }
+                        if (!floated)
+                            return false;
+                        continue; //remainder queued; convoke targets are set on the tc
+                    }
                     return false;
+                }
             }
         }
     }
@@ -3403,16 +3462,17 @@ MTGCardInstance * AIPlayerBaka::FindCardToPlay(ManaCost * pMana, const char * ty
         ManaCost* manaToPay = card->getManaCost();
         if((!pMana->canAfford(card->getManaCost(),0) || card->getManaCost()->getKicker()))
             gotPayments = canPayMana(card,card->getManaCost(),card->has(Constants::ANYTYPEOFMANA));
-        bool hasConvoke = false; //Fix a crash when AI try to pay convoke cost.
+        bool hasConvoke = false; //stays false: convoke payment is handled in payTheManaCost now
         bool hasOffering = card->basicAbilities[Constants::OFFERING]; //Fix a hang when AI try to pay emerge cost.
         bool hasDelve = false; //Fix a hang when AI try to pay delve cost.
         if(card->getManaCost()->getAlternative() && !gotPayments.size() && !pMana->canAfford(card->getManaCost(),0) && !card->getManaCost()->getKicker()){ //Now AI can cast cards using alternative cost.
             ManaCost * extra = card->getManaCost()->getAlternative(); 
             if(extra->extraCosts){
                 for(unsigned int i = 0; i < extra->extraCosts->costs.size() && !hasConvoke && !hasOffering && !hasDelve; i++){
-                    if(dynamic_cast<Convoke*> (extra->extraCosts->costs[i]))
-                        hasConvoke = true;
-                    else if(dynamic_cast<Offering*> (extra->extraCosts->costs[i]))
+                    //Convoke is no longer blacklisted: payTheManaCost taps the
+                    //convoke creatures and floats the reduced remainder, so the
+                    //convoke alternative resolves for the AI (hasConvoke stays false).
+                    if(dynamic_cast<Offering*> (extra->extraCosts->costs[i]))
                         hasOffering = true;
                     else if(dynamic_cast<Delve*> (extra->extraCosts->costs[i]))
                         hasDelve = true;
