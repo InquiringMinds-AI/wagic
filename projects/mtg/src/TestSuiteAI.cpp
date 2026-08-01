@@ -648,8 +648,23 @@ void TestSuiteGame::assertGame()
                     int actualCount = 0;
                     for (int m = 0; m < zone->nb_cards; m++)
                     {
-                        if (zone->cards[m] && zone->cards[m]->getMTGId() == cardToCheck->getId())
-                            actualCount++;
+                        MTGCardInstance * actual = zone->cards[m];
+                        if (!actual || actual->getMTGId() != cardToCheck->getId())
+                            continue;
+                        //Face-aware id match for transformed double-faced cards: in
+                        //test-suite mode a flipped DFC keeps its FRONT MTGId
+                        //(AAFlip skips setMTGId under MODE_TEST_SUITE) while its
+                        //name updates to the current face, so an id-only match
+                        //would let a pre-flip face name pass against a card showing
+                        //its other face and no fixture could observe a flip.
+                        //Scoped to DFCs (backSide non-empty), excluding copies
+                        //(isACopier keeps its own id by design) and tokens
+                        //(negative id, pure id matching).
+                        if (!actual->backSide.empty() && !actual->isACopier
+                            && cardToCheck->getId() >= 0
+                            && actual->getName() != cardToCheck->getName())
+                            continue;
+                        actualCount++;
                     }
                     if (actualCount < expectedCount)
                     {
