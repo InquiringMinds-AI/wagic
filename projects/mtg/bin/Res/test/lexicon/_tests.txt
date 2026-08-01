@@ -1,6 +1,6 @@
 # Card-script lexicon semantic conformance tests.
 # Run from projects/mtg/bin with:
-# WAGIC_TESTSUITE_FILE=test/lexicon/_tests.txt WAGIC_TESTSUITE=1 ./wagic
+# WAGIC_TEST_PRIMITIVES_FILE=test/lexicon/test_primitives.txt WAGIC_TESTSUITE_FILE=test/lexicon/_tests.txt WAGIC_TESTSUITE=1 ./wagic
 lexicon/prevention_pooled_shield.txt
 lexicon/prevention_shield_expires.txt
 lexicon/prevent_noncombat_only.txt
@@ -307,13 +307,13 @@ lexicon/trigger_phasedin_draws.txt
 lexicon/trigger_energized_targeted_counter.txt
 lexicon/trigger_landfall_targeted_damage.txt
 lexicon/mana_chosen_color_persists.txt
-cost_untap_crackleburr.txt
-cost_untap_gate_untapped.txt
-cost_ninjutsu_return_attacker.txt
-mana_dynamic_value_graveyard.txt
-mana_dynamic_value_graveyard_empty.txt
-basic_defender_rejects_attack.txt
-combat_illegal_attacker_click_noop.txt
+lexicon/cost_untap_crackleburr.txt
+lexicon/cost_untap_gate_untapped.txt
+lexicon/cost_ninjutsu_return_attacker.txt
+lexicon/mana_dynamic_value_graveyard.txt
+lexicon/mana_dynamic_value_graveyard_empty.txt
+lexicon/basic_defender_rejects_attack.txt
+lexicon/combat_illegal_attacker_click_noop.txt
 lexicon/cost_untap_crackleburr.txt
 lexicon/cost_untap_gate_untapped.txt
 lexicon/mana_dynamic_value_graveyard.txt
