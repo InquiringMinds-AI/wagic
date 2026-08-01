@@ -54,7 +54,7 @@ GenericRevealAbility::GenericRevealAbility(GameObserver* observer, int id, MTGCa
 
 int GenericRevealAbility::resolve()
 {
-    if(source->lastController->isAI() && source->getAICustomCode().size())
+    if(source->lastController->isAI() && source->getAICustomCode().size() && !game->mForceInteractiveReveal)
     {
         string abi = source->getAICustomCode();
         std::transform(abi.begin(), abi.end(), abi.begin(), ::tolower);//fix crash
@@ -951,7 +951,7 @@ int GenericScryAbility::resolve()
         if(source->lastController->game->battlefield->cards[i]->has(Constants::REPLACESCRY))
             replaceScry = true;
     }
-    if(!replaceScry && source->lastController->isAI() && source->getAICustomCode().size())
+    if(!replaceScry && source->lastController->isAI() && source->getAICustomCode().size() && !game->mForceInteractiveReveal)
     {
         string abi = source->getAICustomCode();
         std::transform(abi.begin(), abi.end(), abi.begin(), ::tolower);//fix crash

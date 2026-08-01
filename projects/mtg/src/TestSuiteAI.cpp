@@ -56,6 +56,28 @@ bool TestSuiteAI::parseLine(const string& s)
 MTGCardInstance * TestSuiteAI::getCard(string action)
 {
     int mtgid = Rules::getMTGId(action);
+
+    //Clicks made while a reveal display is open must resolve to the displayed
+    //instance before a same-id copy in its former library zone.
+    bool revealOpen = observer->OpenedDisplay
+        && (observer->players[0]->game->reveal->nb_cards
+            || observer->players[1]->game->reveal->nb_cards);
+    if (revealOpen)
+    {
+        string lc = action;
+        std::transform(lc.begin(), lc.end(), lc.begin(), ::tolower);
+        for (int i = 0; i < 2; i++)
+        {
+            MTGGameZone * rz = observer->players[i]->game->reveal;
+            for (int k = 0; k < rz->nb_cards; k++)
+            {
+                MTGCardInstance * card = rz->cards[k];
+                if (card && ((mtgid && card->getMTGId() == mtgid) || card->getLCName().compare(lc) == 0))
+                    return card;
+            }
+        }
+    }
+
     if (mtgid)
     {
         MTGCardInstance * byId = Rules::getCardByMTGId(observer, mtgid);
@@ -246,6 +268,11 @@ int TestSuiteAI::Act(float)
     {
         if (observer->mLayers->stackLayer()->askIfWishesToInterrupt == this)
             observer->mLayers->stackLayer()->cancelInterruptOffer();
+    }
+    else if (action.compare("interactivereveal") == 0)
+    {
+        observer->mForceInteractiveReveal = true;
+        DebugTrace("TESTSUITE interactivereveal: use interactive reveal display [" << suite->filename << "]");
     }
     else if (action.find("revealok") != string::npos || action.find("revealnext") != string::npos)
     {

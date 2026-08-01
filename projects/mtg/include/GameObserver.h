@@ -78,6 +78,8 @@ class GameObserver{
   vector<list<Phase*> >gameTurn;
   int cancelCurrentAction();
   ExtraCosts * mExtraPayment;
+  //Test-suite opt-in for exercising aicode-backed reveal cards through the interactive display.
+  bool mForceInteractiveReveal = false;
   int oldGamePhase;
   TargetChooser * targetChooser;
   CardDisplay * OpenedDisplay;
