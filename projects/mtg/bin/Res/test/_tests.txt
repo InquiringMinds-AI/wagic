@@ -269,8 +269,6 @@ generic/xanathar_i1085.txt
 generic/xantcha_i1085.txt
 generic/xenic_poltergeist_i1085.txt
 generic/yurlok_i1085.txt
-ai/force_of_negation_altcost.txt
-ai/force_of_negation_altcost_multiblue.txt
 
 ai/infect_self_target_i594.txt
 generic/devotion.txt

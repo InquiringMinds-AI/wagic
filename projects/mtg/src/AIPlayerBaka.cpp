@@ -1403,19 +1403,11 @@ bool AIPlayerBaka::payTheManaCost(ManaCost * cost, int anytypeofmana, MTGCardIns
                     return false;
                 MTGCardInstance * costTarget = chooseCard(ec->costs[i]->tc,target);
                 int checkTarget = 0;
-                //After a payment is set, tryToSetPayment still returns nonzero,
-                //so the loop fetches ANOTHER cost target. A single-target extra
-                //cost (e.g. Force of Negation's "exile a blue card") has no
-                //second legal pick once its lone target is taken, so this used
-                //to abort a COMPLETED payment. Break instead and let the
-                //isPaymentSet check below reject genuinely-unpaid costs.
                 while (ec->tryToSetPayment(costTarget))
                 {
                     costTarget = chooseCard(ec->costs[i]->tc,target);
-                    if (!costTarget)
-                        break;
                     if(checkTarget == 20)
-                        break;
+                        return false;
                     checkTarget++;
                 }
                 if(!ec->costs[i]->isPaymentSet())
