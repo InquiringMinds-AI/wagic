@@ -1,0 +1,32 @@
+# Regression witness for temporary keyword grants inside && MultiAbility
+# chains (AInstantBasicAbilityModifierUntilEOT::resolve). Stone Haven
+# Pilgrim: "Whenever it attacks, if you control an artifact or enchantment,
+# it gets +1/+1 and gains lifelink until end of turn." With an Ornithopter
+# out, the 2/2 attacks as a 3/3 (pump leg) and its combat damage also heals
+# its controller (keyword leg): P2 20->17 proves the pump, P1 20->23 proves
+# lifelink. Pre-fix the keyword leg silently did nothing (life stayed 20).
+[INIT]
+FIRSTMAIN
+[PLAYER1]
+inplay:stone haven pilgrim,ornithopter
+[PLAYER2]
+[DO]
+next
+#begin combat
+next
+#attackers
+stone haven pilgrim
+next
+#blockers
+next
+#damage
+next
+#end combat
+[ASSERT]
+COMBATEND
+[PLAYER1]
+inplay:stone haven pilgrim,ornithopter
+life:23
+[PLAYER2]
+life:17
+[END]

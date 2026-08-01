@@ -1065,3 +1065,4 @@ probe/glacial_revelation_partition.txt
 lexicon/tergrid_steals_sacrificed_creature.txt
 lexicon/tergrid_steals_discarded_permanent.txt
 lexicon/tergrid_ignores_sacrificed_token.txt
+stone_haven_pilgrim_chain_grant.txt
