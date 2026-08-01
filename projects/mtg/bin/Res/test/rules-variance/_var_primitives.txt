@@ -35,5 +35,6 @@ rarity=C
 mana={0}
 type=Sorcery
 text=Test-only removal: destroy target creature.
-auto=name(Ruin) destroy target(creature)
+target=creature
+auto=destroy
 [/card]
