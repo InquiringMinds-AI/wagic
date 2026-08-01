@@ -1477,7 +1477,17 @@ bool AIPlayerBaka::payTheManaCost(ManaCost * cost, int anytypeofmana, MTGCardIns
 
     if(!cost->getConvertedCost())
     {
-        DebugTrace("AIPlayerBaka: Card was a land and ai cant play any more lands this turn.  ");
+        //N-122b sub-item: this trace used to sit HERE, above the test it
+        //describes, so it fired for EVERY zero-mana payment - every land drop
+        //the AI successfully makes, and every free ability - announcing a
+        //land-drop refusal that had not been decided and usually was not
+        //happening (the very next lines normally return true). It is the
+        //`AIPlayerBaka: Card was a land and ai cant play any more lands this
+        //turn.` line the deck122 notes flagged as firing immediately after
+        //every GPT land pick. Benign to the engine, but it is a false signal in
+        //a log that reviewers read as ground truth, so it moves inside the
+        //branch that actually refuses.
+        //
         //The land-per-turn restriction applies only to PLAYING a land from
         //hand. A fetchland crack (and any activated ability whose source is a
         //land already on the battlefield) is NOT a land play - its {T}/Sac/Life
@@ -1489,7 +1499,10 @@ bool AIPlayerBaka::payTheManaCost(ManaCost * cost, int anytypeofmana, MTGCardIns
         //land that is NOT yet in play (i.e. an actual play-from-hand).
         if (target && target->isLand() && !target->isInPlay(observer)
             && game->playRestrictions->canPutIntoZone(target, game->battlefield) == PlayRestriction::CANT_PLAY)
+        {
+            DebugTrace("AIPlayerBaka: Card was a land and ai cant play any more lands this turn.  ");
             return false;
+        }
         DebugTrace("AIPlayerBaka: Card or Ability was free to play.  ");
         if(!cost->hasX())//don't return true if it contains {x} but no cost, locks ai in a loop. ie oorchi hatchery cost {x}{x} to play.
             return true;
