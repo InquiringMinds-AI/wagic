@@ -1,0 +1,24 @@
+#Convoke colour scan (N-137a class): a white creature must be able to pay the
+#{W} pip of Venerated Loxodon {4}{W} via convoke. The old reduction loop broke
+#after its first colour index (the else arm set the same break flag as a
+#colour match), so a colored pip could only ever be covered by lands - with no
+#lands, the cast was wrongly unpayable. Board: Savannah Lions (white) + four
+#Grizzly Bears, ZERO lands. All five creatures tap: Lions covers {W}, the
+#Bears cover the generic. Pre-fix the AI cannot cast; post-fix Loxodon
+#resolves.
+FORCEABILITY
+AICALLS 40
+[INIT]
+FIRSTMAIN
+[PLAYER1]
+inplay:savannah lions,grizzly bears,grizzly bears,grizzly bears,grizzly bears
+hand:venerated loxodon
+[PLAYER2]
+life:20
+[DO]
+ai
+[ASSERT]
+UNTAP
+[PLAYER1]
+inplay:venerated loxodon,savannah lions,grizzly bears,grizzly bears,grizzly bears,grizzly bears
+[END]
