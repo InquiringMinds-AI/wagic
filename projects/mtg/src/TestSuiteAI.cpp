@@ -800,15 +800,30 @@ TestSuite::TestSuite(const char * filename)
     endTime = startTime;
     std::string contents;
     const char * testPrimitivesFile = getenv("WAGIC_TEST_PRIMITIVES_FILE");
+    //Lexicon fixtures reference synthetic cards, and some of them are in the
+    //MAIN registry -- without the synthetic set the canonical no-env invocation
+    //fails those tests. So the lexicon primitives are the DEFAULT when the env
+    //var is unset; the env var still overrides (scoped runs point it at a probe
+    //copy), and a missing default file is not an error.
+    bool defaultedPrimitives = false;
+    if (getenv("WAGIC_TESTSUITE") && (!testPrimitivesFile || !testPrimitivesFile[0]))
+    {
+        testPrimitivesFile = "test/lexicon/test_primitives.txt";
+        defaultedPrimitives = true;
+    }
     if (getenv("WAGIC_TESTSUITE") && testPrimitivesFile && testPrimitivesFile[0])
     {
         string error;
         if (!MTGCollection()->loadTestPrimitives(testPrimitivesFile, error))
         {
-            fprintf(stderr, "WAGIC_TEST_PRIMITIVES_FILE: %s\n", error.c_str());
-            exit(EXIT_FAILURE);
+            if (!defaultedPrimitives)
+            {
+                fprintf(stderr, "WAGIC_TEST_PRIMITIVES_FILE: %s\n", error.c_str());
+                exit(EXIT_FAILURE);
+            }
         }
-        fprintf(stderr, "WAGIC_TEST_PRIMITIVES_FILE: loaded %s\n", testPrimitivesFile);
+        else
+            fprintf(stderr, "WAGIC_TEST_PRIMITIVES_FILE: loaded %s\n", testPrimitivesFile);
     }
     if (JFileSystem::GetInstance()->readIntoString(filename, contents))
     {
