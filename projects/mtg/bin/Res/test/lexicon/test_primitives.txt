@@ -148,3 +148,22 @@ type=Enchantment
 abilities=showfromtoplibrary,canplayenchantmentlibrarytop
 text=Test-only primitive for casting enchantment cards from the top of library.
 [/card]
+[card]
+id=2100000984
+name=Lexicon Stash Leak Probe
+rarity=C
+mana={0}
+type=Instant
+auto=zzznomatchzzz and!( draw:2 )!
+auto=draw:1
+text=Test-only: line 1 sets the and!() stash then matches no effect parser (returns NULL); line 2 draws 1. If the NULL line's stash leaked into line 2 it would chain draw:2 and draw 3 total. Regression for the getAbilities cross-line stash reset (MTGAbility.cpp).
+[/card]
+[card]
+id=2100000985
+name=Lexicon Forced Landdiscard
+rarity=C
+mana={1}
+type=Sorcery
+auto=reject notaTarget(land|myhand)
+text=Test-only: its caster discards a land card from their own hand. Fires an opponent's land-discard trigger.
+[/card]

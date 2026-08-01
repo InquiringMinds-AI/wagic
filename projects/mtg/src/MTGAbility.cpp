@@ -6638,6 +6638,15 @@ int AbilityFactory::getAbilities(vector<MTGAbility *> * v, Spell * spell, MTGCar
             line = magicText;
             magicText = "";
         }
+        //Reset the cross-line parse stashes before each top-level line. Both are set
+        //mid-line (storedAndAbility from and!(...)! extraction; storedPayString from
+        //pay[[ ]] extraction) and are meant to be consumed WITHIN the same
+        //parseMagicLine tree. If a line sets one and then returns NULL (no effect
+        //parser matched to consume it), the stash used to leak into the NEXT line's
+        //parse, which silently consumed it as an unrelated and-ability / pay-string
+        //and corrupted that line. Clearing here contains any leak to its own line.
+        storedAndAbility.clear();
+        storedPayString.clear();
         MTGAbility * a = parseMagicLine(line, result, spell, card, false, false, dest);
         if (a)
         {
