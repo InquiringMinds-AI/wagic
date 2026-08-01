@@ -2558,13 +2558,13 @@ MTGAbility * AbilityFactory::parseMagicLine(string s, int id, Spell * spell, MTG
     if (splitTrigger.size())
     {
         TriggeredAbility * trigger = parseTrigger(splitTrigger[1], s, id, spell, card, target);
-        if (splitTrigger[1].find("restriction{") != string::npos)//using other/cast restrictions for abilities.
+        if (trigger && splitTrigger[1].find("restriction{") != string::npos)//using other/cast restrictions for abilities.
         {
             vector<string> splitRest = parseBetween(s,"restriction{","}");
             if (splitRest.size())
                 trigger->castRestriction = splitRest[1];
         }
-        if (splitTrigger[1].find("restriction{{") != string::npos)
+        if (trigger && splitTrigger[1].find("restriction{{") != string::npos)
         {
             vector<string> splitRest = parseBetween(s,"restriction{{","}}");
             if (splitRest.size())
