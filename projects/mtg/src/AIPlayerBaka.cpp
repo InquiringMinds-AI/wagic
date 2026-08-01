@@ -4744,27 +4744,9 @@ int AIPlayerBaka::Act(float dt)
         while(clickstream.size())
         {
             AIAction * action = clickstream.front();
-            int acted = action->Act();
-            //a refused payment click (mana producer / wrapped producer)
-            //means the rest of this plan can no longer complete - clicking
-            //on would float partial mana and dead-end at the cast click
-            //(wave-20 deck102 stall loop). Abort the remaining plan.
-            bool paymentClickRefused = !acted && action->ability
-                && !action->target && !action->playerAbilityTarget
-                && action->mAbilityTargets.empty()
-                && (dynamic_cast<AManaProducer*>(action->ability)
-                    || dynamic_cast<GenericActivatedAbility*>(action->ability));
+            action->Act();
             SAFE_DELETE(action);
             clickstream.pop();
-            if (paymentClickRefused)
-            {
-                while(clickstream.size())
-                {
-                    AIAction * rest = clickstream.front();
-                    SAFE_DELETE(rest);
-                    clickstream.pop();
-                }
-            }
         }
     }
     return 1;
