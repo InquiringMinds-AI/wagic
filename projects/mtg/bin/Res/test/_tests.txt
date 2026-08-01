@@ -984,7 +984,6 @@ momir/overcost.txt
 #AI Tests
 ########################
 ai/proliferate_simple.txt
-ai/menu_cross_seat_answer.txt
 ########################
 #Specific Cards
 ########################
