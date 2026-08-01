@@ -106525,7 +106525,8 @@ toughness=1
 [card]
 name=Soulhunter Rakshasa
 abilities=cantblock
-auto=damage:type:swamp:mybattlefield target(opponent)
+target=opponent
+auto=damage:type:swamp:mybattlefield
 text=Soulhunter Rakshasa can't block. -- When Soulhunter Rakshasa enters, if you cast it from your hand, it deals 1 damage to target opponent for each Swamp you control.
 mana={3}{B}{B}
 type=Creature
