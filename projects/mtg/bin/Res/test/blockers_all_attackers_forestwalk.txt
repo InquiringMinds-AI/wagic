@@ -1,0 +1,27 @@
+# Repro: defender clicks a creature while every attacker has forestwalk
+# (defender controls a Forest). The click spawns the two-click block flow
+# with an empty 'blockable' chooser; probe whether the phase can still
+# advance afterwards. Expect (if healthy): unblocked 2 damage, P2 at 18.
+[INIT]
+COMBATATTACKERS
+[PLAYER1]
+inplay:Zodiac Monkey
+[PLAYER2]
+inplay:Forest,Grizzly Bears
+[DO]
+Zodiac Monkey
+next
+#blockers - defender clicks Bears (illegal block, forestwalk)
+Grizzly Bears
+next
+#damage
+next
+#end of combat
+[ASSERT]
+COMBATEND
+[PLAYER1]
+inplay:Zodiac Monkey
+[PLAYER2]
+inplay:Forest,Grizzly Bears
+life:18
+[END]

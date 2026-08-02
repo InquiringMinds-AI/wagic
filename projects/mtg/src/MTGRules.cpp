@@ -2639,6 +2639,27 @@ int MTGBlockRule::reactToClick(MTGCardInstance * card)
             TargetChooserFactory tf(card->getObserver());
             tcb = tf.createTargetChooser("blockable",card);
             tcb->targetter = NULL;
+            //If no attacker is legally blockable by this creature (evasion such
+            //as landwalk can rule out every attacker at once), do NOT arm the
+            //chooser: a mandatory targeting mode with zero candidates locks the
+            //UI - nothing is clickable and the mode cannot be cancelled. The
+            //click is a no-op instead (same posture as the illegal-attacker
+            //click fix).
+            {
+                int blockableCount = 0;
+                MTGGameZone * attackerZone = game->currentPlayer->game->inPlay;
+                for (int azi = 0; azi < attackerZone->nb_cards; azi++)
+                {
+                    MTGCardInstance * atk = attackerZone->cards[azi];
+                    if (atk && atk->isAttacker() && tcb->canTarget(atk))
+                        blockableCount++;
+                }
+                if (!blockableCount)
+                {
+                    SAFE_DELETE(tcb);
+                    return 0;
+                }
+            }
             blocker = NEW AABlock(card->getObserver(),-1,card,NULL);
             blocker->oneShot = true;
             blocker->forceDestroy = 1;
