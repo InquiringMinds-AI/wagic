@@ -10954,7 +10954,12 @@ void ATutorialMessage::Update(float dt)
     if (game->mLayers->stackLayer()->getCurrentTutorial() != this)
         return;
 
-    if (mUserCloseRequest && mY < -SCREEN_HEIGHT)
+    //<= not <: the slide-out can land mY on exactly -SCREEN_HEIGHT (float
+    //rounding), where BOTH the strict close check and the strict animation
+    //guard below are false - the message is fully offscreen yet never marked
+    //closed, currentTutorial never clears, and ActionStack::Update stays
+    //paused forever (observed live: game soft-locked with mY == -272.0).
+    if (mUserCloseRequest && mY <= -SCREEN_HEIGHT)
         mDontShow = true;
 
     if (mDontShow)
